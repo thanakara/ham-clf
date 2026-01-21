@@ -1,0 +1,3 @@
+dataset:
+  csv: images/HAM10000_metadata.csv
+  image_dir: images/HAM10000_images_full

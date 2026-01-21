@@ -1,0 +1,65 @@
+[project]
+name = "ham-clf"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+authors = [
+    { name = "thanakara", email = "thkaranikolopoulos@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "ipykernel>=7.1.0",
+    "matplotlib~=3.8.1",
+    "numpy~=1.26.2",
+    "pandas~=2.1.3",
+    "scikit-learn~=1.3.2",
+    "tensorflow~=2.16",
+]
+
+[project.scripts]
+ham-clf = "ham_clf:app.main"
+
+[build-system]
+requires = ["uv_build>=0.8.14,<0.9.0"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "ruff>=0.14.13",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+exclude = [".git", ".vscode"]
+
+[tool.ruff.lint]
+select = [
+    "I",    # isort
+    "B",    # flake8-bugbear
+    "C",    # flake8-comprehensions
+    "E",    # pycodestyle
+    "F",    # Pyflakes
+    "W",    # pycodestyle warnings
+    "B9",   # flake8-bugbear
+    "UP",   # pyupgrade
+    "PL",   # pylint
+    # "G",    # logging
+]
+ignore = [
+    "W191",     # indentation-with-tabs, handled by ruff-format
+    "E731",     # lambda-assignment
+    "B905",     # zip-without-explicit-strict
+    "PLR0913",  # too-many-arguments
+    "PLC0414",  # useless-import-alias
+]
+
+[tool.ruff.lint.isort]
+from-first = false
+length-sort = true
+lines-between-types = 1
+known-first-party = ["src"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
