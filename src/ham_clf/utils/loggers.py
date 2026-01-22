@@ -1,21 +1,28 @@
 import sys
 import logging
 
+from pathlib import Path
+from logging.config import dictConfig
 
-class CustomLogger:
+from omegaconf import OmegaConf
+
+
+class HAMLogger:
     def __init__(self, name=__name__):
         self.name = name
-        self.logger = self._setup()
 
-    def _setup(self):
-        logger = logging.getLogger(self.name)
-        logger.setLevel(logging.INFO)
-        formatter = logging.Formatter(fmt="[%(levelname)s | %(name)s]\n%(message)s")
-        if not logger.handlers:
-            handler = logging.StreamHandler(sys.stdout)
-            handler.setFormatter(formatter)
-            logger.addHandler(handler)
-        return logger
+    def configure_from_file(self, filepath: Path | str) -> None:
+        log = logging.getLogger(self.name)
+        try:
+            cfg = OmegaConf.load(filepath)
+            config = OmegaConf.to_object(cfg=cfg)
+            dictConfig(config=config)
 
-    def get_logger(self):
-        return self.logger
+        except FileNotFoundError:
+            log.setLevel(level=logging.INFO)
+            handler = logging.StreamHandler(stream=sys.stdout)
+            fmt = "%(lineno)s: logging_config_file_path_not_found"
+            handler.setFormatter(logging.Formatter(fmt=fmt))
+            log.addHandler(handler)
+
+        return log

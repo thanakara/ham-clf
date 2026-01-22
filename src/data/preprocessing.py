@@ -7,7 +7,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 
 
-class HAMPreprocessor:
+class HAMDataProcessor:
     def __init__(self, filepath: Path | str, log: logging.Logger):
         self.filepath = filepath
         self.log = log
@@ -44,7 +44,7 @@ class HAMPreprocessor:
         return df.groupby("lesion_id", group_keys=False).apply(lambda X: X.sample(1, random_state=42))
 
     def _load_df(self) -> pd.DataFrame:
-        self.log.info("loading_dataframe")
+        self.log.debug("loading_dataframe")
         usecols = ["image_id", "dx", "lesion_id"]
         img_suffix = ".jpg"
         df = pd.read_csv(self.filepath, usecols=usecols)
@@ -77,16 +77,16 @@ class HAMPreprocessor:
         train_df = df[df.lesion_id.isin(train_lesions.lesion_id)]
         valid_df = df[df.lesion_id.isin(valid_lesions.lesion_id)]
         test_df = df[df.lesion_id.isin(test_lesions.lesion_id)]
-        self.log.info("dropping_duplicates_on_lesion")
+        self.log.debug("dropping_duplicates_on_lesion")
 
         return train_df, valid_df, test_df
 
     def preprocess(self) -> tuple[pd.DataFrame]:
         train_df, valid_df, test_df = self._get_unique_lesions()
-        self.log.info("balance_training_dataset")
+        self.log.debug("balance_training_dataset")
         train = self._balance_classes(train_df, self.target_samples_per_class)
-        self.log.info("get_one_image_per_lesion_on_validation_dataset")
+        self.log.debug("get_one_image_per_lesion_on_validation_dataset")
         valid = self._get_one_image_per_lesion(valid_df)
-        self.log.info("get_one_image_per_lesion_on_testing_dataset")
+        self.log.debug("get_one_image_per_lesion_on_testing_dataset")
         test = self._get_one_image_per_lesion(test_df)
         return train, valid, test

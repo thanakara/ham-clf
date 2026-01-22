@@ -1,3 +1,18 @@
 dataset:
-  csv: images/HAM10000_metadata.csv
-  image_dir: images/HAM10000_images_full
+  csv: HAM10000_metadata.csv
+  dirname: HAM10000_images_full
+training:
+  transfer:
+    input_shape: [224, 224, 3]
+    weights: "imagenet"
+    learning_rate: 0.001
+    alpha: 0.75
+    units: 128
+    n_classes: 7
+    dropout_rate: 0.5
+    epochs: 10
+  fine_tuning:
+    n_last_layers: 30
+    learning_rate: ${lower_lr:${training.transfer.learning_rate}}
+    epochs: 10
+    modelname: "mobilenetv2_ft0.keras"

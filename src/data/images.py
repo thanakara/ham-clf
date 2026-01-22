@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 def merge_images(merged_directory: Path | str, log: logging.Logger) -> None:
     if merged_directory.exists():
-        log.info(f"{merged_directory} already exists")
+        log.info(f"{merged_directory.name} already exists")
         return
 
     log.info(f"Creating {merged_directory.name}")
