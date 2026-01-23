@@ -16,7 +16,7 @@ handlers:
   #   class: logging.FileHandler
   #   level: DEBUG
   #   formatter: file-simple
-  #   filename: src/ham_clf/logs/sess.log
+  #   filename: src/../logs/sess.log
 
 loggers:
   ham_clf:

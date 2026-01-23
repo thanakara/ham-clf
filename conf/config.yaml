@@ -10,7 +10,7 @@ training:
     units: 128
     n_classes: 7
     dropout_rate: 0.5
-    epochs: 10
+    epochs: 15
   fine_tuning:
     n_last_layers: 30
     learning_rate: ${lower_lr:${training.transfer.learning_rate}}
