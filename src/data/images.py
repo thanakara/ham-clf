@@ -7,6 +7,8 @@ import pandas as pd
 import tensorflow as tf
 import matplotlib.pyplot as plt
 
+from keras.applications.mobilenet_v2 import preprocess_input
+
 
 def merge_images(merged_directory: Path | str, log: logging.Logger) -> None:
     if merged_directory.exists():
@@ -32,3 +34,10 @@ def plot_random_image(df: pd.DataFrame, images_dir: Path | str, size=(224, 224))
     plt.imshow(X)
     plt.title(df.dx[random_index])
     plt.axis("off")
+
+
+def image_to_tensor(image_path: Path | str):
+    contents = tf.io.read_file(str(image_path))
+    image = tf.image.decode_image(contents=contents, channels=3)
+    X = tf.image.resize(image, size=[224, 224])
+    return preprocess_input(X)[tf.newaxis, ...]
