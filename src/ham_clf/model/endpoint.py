@@ -7,7 +7,8 @@ from ham_clf.model.template import PredictionResponse
 
 
 def invoke(model, image_path: Path | str) -> str:
-    assert image_path.exists()
+    if not image_path.exists():
+        raise FileNotFoundError(f"Image not found: {image_path}")
     jsonpath = Path("src") / "jupyter" / "classes.json"
     with jsonpath.open("r") as f_:
         classes_dict = json.load(f_)
