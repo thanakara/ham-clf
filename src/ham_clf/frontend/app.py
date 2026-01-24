@@ -28,7 +28,7 @@ if uploaded_file is not None:
     with col1:
         st.subheader("Uploaded Image")
         image = Image.open(uploaded_file)
-        st.image(image, use_column_width=True)
+        st.image(image)
 
     with col2:
         st.subheader("Results")
