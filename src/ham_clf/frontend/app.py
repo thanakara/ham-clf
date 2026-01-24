@@ -1,9 +1,21 @@
-import requests
+import io
+import sys
+import asyncio
+
+from pathlib import Path
+
 import streamlit as st
 
 from PIL import Image
+from fastapi import UploadFile
 
-API_URL = "http://localhost:8000/model/invoke"
+from ham_clf.backend.app import model, invoke_endpoint
+
+backend_path = Path(__file__).parent.parent / "backend"  # adding backend to python path
+if str(backend_path) not in sys.path:
+    sys.path.insert(0, str(backend_path))
+
+
 STATUS_OK = 200
 
 st.set_page_config(page_title="Skin-Cancer [HAM10000]", page_icon="🔬", layout="centered")
@@ -22,6 +34,20 @@ uploaded_file = st.file_uploader(
     "Choose an image", type=["jpg", "jpeg", "png"], help="Let the image be as clear as possible"
 )
 
+
+async def make_prediction(uploaded_file):
+    """Call the FastAPI endpoint directly"""
+    uploaded_file.seek(0)
+    file_content = uploaded_file.read()
+
+    file_obj = UploadFile(
+        file=io.BytesIO(file_content), filename=uploaded_file.name, headers={"content-type": uploaded_file.type}
+    )
+
+    result = await invoke_endpoint(file_obj)
+    return result
+
+
 if uploaded_file is not None:
     col1, col2 = st.columns([1, 1])
 
@@ -36,31 +62,17 @@ if uploaded_file is not None:
         if st.button("Predict", type="primary", use_container_width=True):
             with st.spinner("Analyzing image..."):
                 try:
-                    uploaded_file.seek(0)
+                    result = asyncio.run(make_prediction(uploaded_file))
 
-                    files = {"file": (uploaded_file.name, uploaded_file, uploaded_file.type)}
+                    st.success("Analysis complete")
 
-                    response = requests.post(API_URL, files=files, timeout=30)
+                    st.metric(label="Class:", value=result.prediction)
 
-                    if response.status_code == STATUS_OK:
-                        result = response.json()
+                    confidence_pct = result.confidence * 100
+                    st.metric(label="Confidence", value=f"{confidence_pct:.2f}%")
 
-                        st.success("Analysis complete")
+                    st.progress(result.confidence)
 
-                        st.metric(label="Class:", value=result["prediction"])
-
-                        confidence_pct = result["confidence"] * 100
-                        st.metric(label="Confidence", value=f"{confidence_pct:.2f}%")
-
-                        st.progress(result["confidence"])
-
-                    else:
-                        st.error(f"Error: {response.status_code} - {response.text}")
-
-                except requests.exceptions.ConnectionError:
-                    st.error("Cannot connect to the API. Make sure the backend is running on http://localhost:8000")
-                except requests.exceptions.Timeout:
-                    st.error("Request timed out. Server took too long to respond")
                 except Exception as e:
                     st.error(f"An error occurred: {str(e)}")
 
@@ -120,15 +132,14 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("API Status")
+    st.subheader("Backend Status")
     try:
-        health_check = requests.get("http://localhost:8000/", timeout=5)
-        if health_check.status_code == STATUS_OK:
-            st.success("Backend Online")
+        if model is not None:
+            st.success("Online")
         else:
-            st.warning("Backend Unreachable")
-    except Exception:
-        st.error("Backend Offline")
+            st.error("Offline")
+    except Exception as e:
+        st.error(f"Backend Error: {str(e)}")
 
 col_disclaimer, col_technical = st.columns([1, 1])
 
